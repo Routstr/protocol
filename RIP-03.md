@@ -1,56 +1,54 @@
-# RIP-03: Web Dashboard
+# RIP-03: Client Specification
 
-This document defines a fully client-side, 100% local web or app interface for provider discovery, chat, proxy interaction and wallet management.
-There is no backend: all logic and data flow run in the user's browser or device. The frontend includes a chat application, discovery interface, landing page, and documentation. Authentication and filtering leverage Nostr for login and social graph-based filtering. Users can publish their own node information or interact with available nodes directly from the interface.
+This document defines the standard behavior and architectural requirements for a Routstr client. A Routstr client acts as the bridge between user applications (agents, IDEs, scripts) and the distributed network of AI service providers.
 
-## Features
+The client is designed to be a drop-in replacement for standard AI SDKs while handling the complexities of decentralized discovery, payment, and authentication transparently.
 
-- 100% local frontend: no backend, all data and logic run on the client.
-- Includes:
-  - Chat application
-  - Discovery interface
-  - Landing page
-  - Documentation
-  - NIP-60 Wallet
-  - Auth Key management
-- Nostr-based login and filtering (social graph proximity)
-- List active nodes from Nostr Kind 38421.
-- Filter by:
-  - Supported model(s)
-  - Region
-  - Price range
-  - Social network proximity (follow graph)
-  - Average rating (from evals)
-- Publish personal node information or interact with nodes
-- Future: Toggle eval visibility once RIP-04 is live.
+## 1. OpenAI-API Backwards Compatibility
 
-## UI Components
+Routstr clients MUST maintain high fidelity with the OpenAI API specification to ensure broad compatibility with the existing ecosystem of tools.
 
-- **Search Bar**: Free text for node-id or description.
-- **Filters Panel**: Sliders and checkboxes.
-- **Node Card**:
-  - Description
-  - Models
-  - Price
-  - Rating summary
-  - Connect button (opens external client)
+- **Interface parity**: The client implements standard endpoints (`/v1/chat/completions`, `/v1/embeddings`, `/v1/models`) matching the OpenAI schema.
+- **Drop-in replacement**: Users can utilize the official `openai` Python/Node.js library by simply changing the `base_url` to the Routstr client's local proxy address (e.g., `http://localhost:xxxx/v1`) and inserting a cashu token as api key.
+- **Transparent Proxying**: The client translates standard requests into Routstr-compatible network calls, injecting necessary headers for payment and routing without altering the request body structure.
 
-## Data Flow
+## 2. Ephemeral Authentication (Cashu-as-Key)
 
-1. Subscribe to Nostr Kind 40500 & 31555 events.
-2. Maintain in-memory index, update on new events.
-3. Join with evals to compute live scores.
-4. Render node list with applied filters.
+Authentication and funding are unified into a single bearer-asset mechanism, preserving complete privacy through a "Rolling Identity" model.
 
-## Metrics
+- **Cashu Token as API Key**: The client passes a valid Cashu token (containing monetary value) in the standard API key field (e.g., `Authorization: Bearer <cashu_token>`).
+- **Implicit Session**: The provider accepts this token as both payment and a temporary identity. The token's secret effectively acts as the account identifier for the duration of the operation.
+- **Privacy by Default**:
+  - Upon request completion, the provider deducts the cost.
+  - The **entire remaining balance is immediately refunded** as a *new* Cashu token returned to the client in the response headers or body.
+  - Because Cashu uses Chaumian blind signatures, this new token is cryptographically unlinkable to the input token.
+  - The next request uses this fresh token, ensuring that every interaction appears to come from a completely new, unrelated user.
 
-- Query performance: ≤200 ms for 1 k nodes.
-- Real-time updates: UI refresh on new events.
+## 3. Wallet Management & Transaction Cycle
 
----
+The client manages an internal Cashu wallet to handle the "Overpay-then-Refund" lifecycle required for stateless, trustless operation.
 
-## TODO
+- **Minimum Required Balance (Max Cost)**:
+  - Providers publish a `max_cost` for each model (via `/v1/models`). This represents the worst-case cost for a request (max context + max output).
+  - This `max_cost` serves as the **Minimum Required Balance** for any interaction.
+  - The client MUST ensure the Cashu token used for authentication has a value `>= max_cost`.
 
-[ ] - unify chat, docs, api key management and landingpage
-[ ] - build marketplace interface
-[ ] - everything running local, no cloud function
+- **Token Selection & Consolidation**:
+  - Before a request, the client scans its wallet for a token satisfying the `max_cost` requirement.
+  - If no single token is sufficient, the client automatically performs a self-payment (mint interaction) to merge smaller tokens into a single token of sufficient value.
+
+- **Refund Cycle**:
+  - Immediately after the API request completes, the client calculates the remaining balance from the ephemeral session.
+  - The client calls `/v1/balance/refund` to reclaim the unspent funds.
+  - The provider returns a *new* Cashu token, which the client stores back in its wallet (or NIP-60 storage), completing the cycle.
+
+## 4. Node Discovery
+
+The client is responsible for discovering, filtering, and selecting providers from the decentralized network.
+
+- **Nostr Ingestion**: The client subscribes to Nostr relays to listen for Kind `38421` (Provider Advertisement) events.
+- **Dynamic Registry**: It maintains an in-memory, real-time registry of active providers.
+- **Smart Routing**:
+  - **Filtering**: Filters nodes based on model availability (e.g., "DeepSeek-R1"), max price, and region.
+  - **Scoring**: Ranks providers by latency, reliability scores (from RIP-04 audits), and social graph trust.
+- **Failover**: If a request to the selected provider fails, the client automatically retries with the next best provider in the registry, transparent to the user.
