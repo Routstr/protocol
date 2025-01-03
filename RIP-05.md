@@ -1,79 +1,91 @@
-# RIP-05: SDKs & Smart Clients
+# RIP-05: Pricing Algorithm
 
-This RIP proposes a comprehensive suite of SDKs and Smart Client libraries across multiple programming languages, enabling seamless integration with the protocol and ensuring robust privacy, payment, and provider management.
+This document defines the standard pricing model, cost calculation logic, and verification procedures for the Routstr protocol. It ensures transparency and predictability in the decentralized marketplace.
 
-## Scope
+## 1. Unit of Account
 
-- Multi-language SDKs: Python, TypeScript/JavaScript, Go, Rust, and others as needed.
-- Full-stack implementations for:
-  - Client
-  - Server
-  - Discovery
-  - Evaluation Server
-  - Chat API
-- Unified interfaces for Cashu wallet management, API key rotation, and proxy/anonymity features.
+- **Base Unit**: All internal calculations and balances are tracked in **Millisats (msats)** to ensure precision for micro-transactions.
+  - 1 SAT = 1,000 msats.
+- **Public API**: The `/v1/models` endpoint exposes pricing in **SATS** (floating point) or **USD** (for reference), but the actual accounting happens in msats.
 
-## Components
+## 2. Pricing Components
 
-### 1. SDKs
+Providers define pricing via the `Pricing` object in the `/v1/models` endpoint. The total cost of a request is the sum of applicable components:
 
-- Provide idiomatic libraries in each language for all protocol operations.
-- Expose high-level abstractions for:
-  - Token management (Cashu wallets)
-  - API key rotation
-  - Provider selection and scoring
-  - Proxy/Tor integration for request anonymization
-  - Secure, stateless request/response flows
+| Component | Description | Unit |
+| :--- | :--- | :--- |
+| **Prompt** | Cost for processing input text/tokens. | sats / 1M tokens |
+| **Completion** | Cost for generating output text/tokens. | sats / 1M tokens |
+| **Request** | Fixed fee per API call (optional). | sats / request |
+| **Image** | Cost per generated image (optional). | sats / image |
+| **Web Search** | Cost for active web search/browsing (optional). | sats / query |
+| **Reasoning** | Cost for internal reasoning tokens (e.g., DeepSeek R1). | sats / 1M tokens |
 
-### 2. Smart Clients
+*Note: Prices are typically pegged to USD by the provider and converted to SATS in real-time based on the current BTC/USD exchange rate.*
 
-- Automated token cycling and top-up from Cashu wallets.
-- Per-request API key rotation and proxy/Tor circuit selection.
-- Dynamic provider discovery and scoring (price, latency, rating, reliability).
-- Pluggable architecture for custom scoring, proxy, or wallet backends.
+## 3. Cost Calculation Logic
 
-### 3. Server & Discovery
+The provider calculates the final cost *after* the request is completed based on actual usage.
 
-- Reference implementations for server, discovery, and evaluation endpoints in each supported language.
-- Standardized APIs for provider registration, health, and metrics reporting.
+```python
+Total_Cost_msats = (Input_Tokens * Price_Input_per_token_msats) +
+                   (Output_Tokens * Price_Output_per_token_msats) +
+                   (Image_Count * Price_Image_msats) +
+                   (Web_Search_Count * Price_Search_msats) +
+                   Request_Fee_msats
+```
 
-### 4. Evaluation Server & Chat API
+- **Rounding**: Calculations are performed in floating point and rounded **UP** (ceil) to the nearest millisat to ensure the provider is covered.
 
-- Modular evaluation server for benchmarking and rating providers.
-- Chat API reference implementations for real-time and batch inference.
+## 4. Max Cost (Minimum Required Balance)
 
-## Privacy & Security
+Since the output length is unknown before the request, the Client must prepay the **Max Cost**.
 
-- Built-in support for proxy and Tor routing in all SDKs and clients.
-- Automated rotation of API keys and tokens to minimize linkability.
-- Rate limiting and circuit rotation to prevent fingerprinting.
+### 4.1. Formula
 
-## Implementation Plan
+The provider calculates `max_cost` for each model and exposes it in `/v1/models`. The standard formula is:
 
-- Define core protocol interfaces and data models in each language.
-- Develop and maintain open-source SDKs and reference servers.
-- Ensure feature parity and cross-language test suites.
-- Document integration patterns and privacy best practices.
+```python
+Max_Cost = (Context_Window_Size * Price_Input) +
+           (Max_Output_Limit * Price_Output) +
+           Request_Fee
+```
 
----
+*If `Max_Output_Limit` is not defined by the model architecture, a safe default (e.g., 4096 tokens) or the full context remaining is used.*
 
-## TODO
+### 4.2. Client usage
 
-- [ ] Develop multi-language SDKs (Python, TypeScript/JavaScript, Go, Rust, etc.)
-- [ ] Implement full-stack components: client, server, discovery, evaluation server, chat API
-- [ ] Provide unified interfaces for Cashu wallet management, API key rotation, proxy/anonymity
-- [ ] Expose high-level abstractions in SDKs (token management, API key rotation, provider selection, proxy/Tor integration, secure flows)
-- [ ] Smart clients: automated token cycling/top-up, per-request API key rotation, proxy/Tor circuit selection
-- [ ] Dynamic provider discovery and scoring (price, latency, rating, reliability)
-- [ ] Pluggable architecture for custom scoring, proxy, or wallet backends
-- [ ] Reference implementations for server, discovery, and evaluation endpoints in each language
-- [ ] Standardized APIs for provider registration, health, and metrics
-- [ ] Modular evaluation server for benchmarking and rating providers
-- [ ] Chat API reference implementations (real-time and batch)
-- [ ] Built-in proxy and Tor routing in all SDKs and clients
-- [ ] Automated rotation of API keys and tokens
-- [ ] Rate limiting and circuit rotation to prevent fingerprinting
-- [ ] Define core protocol interfaces and data models in each language
-- [ ] Maintain open-source SDKs and reference servers
-- [ ] Ensure feature parity and cross-language test suites
-- [ ] Document integration patterns and privacy best practices
+The client **MUST** ensure the Cashu token used for the request has a value `>= max_cost`.
+
+## 5. Client-Side Verification
+
+To prevent "hidden fees" or overcharging, clients should verify the cost charged by the provider.
+
+### 5.1. Verification Steps
+
+1. **Fetch Rates**: Before the request, the client caches the pricing rates from `/v1/models`.
+2. **Track Usage**: The client records the `usage` (prompt_tokens, completion_tokens) returned in the API response.
+3. **Calculate Expected Cost**:
+
+    ```python
+    Expected_Cost = (usage.prompt_tokens * cached_rates.prompt) +
+                    (usage.completion_tokens * cached_rates.completion) +
+                    ...
+    ```
+
+4. **Calculate Actual Cost**:
+
+    ```python
+    Actual_Cost = Original_Token_Value - Refunded_Token_Value
+    ```
+
+5. **Compare**:
+    - `abs(Expected_Cost - Actual_Cost) < Tolerance`
+    - A small tolerance (e.g., 1-5 sats) is recommended to account for minor exchange rate fluctuations during the request window or rounding differences.
+
+### 5.2. Dispute Resolution
+
+- If `Actual_Cost` consistently exceeds `Expected_Cost` beyond the tolerance, the client should:
+  - Log a "Price Mismatch" warning.
+  - Downgrade the provider's trust score.
+  - Publish a negative audit event (RIP-04) if the discrepancy is egregious.
