@@ -1,4 +1,4 @@
-# RIP-02: Frontend Discovery
+# RIP-03: Frontend Discovery
 
 Defines the web or app interface for browsing and filtering available inference nodes based on social network and evolving evals.
 
@@ -11,7 +11,7 @@ Defines the web or app interface for browsing and filtering available inference 
   - Price range
   - Social network proximity (follow graph)
   - Average rating (from evals)
-- Future: Toggle eval visibility once RIP-03 is live.
+- Future: Toggle eval visibility once RIP-04 is live.
 
 ## UI Components
 

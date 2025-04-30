@@ -1,4 +1,4 @@
-# RIP-03: Evaluations & Quality Control
+# RIP-04: Evaluations & Quality Control
 
 Specifies how clients anonymize and randomize evaluation submissions to mimic normal inference requests.
 
@@ -12,7 +12,7 @@ Specifies how clients anonymize and randomize evaluation submissions to mimic no
 1. Client selects a subset of providers based on discovery.
 2. For each eval job:
    - Generate randomized inference parameters.
-   - Send inference request off-chain via usual API.
+   - Send inference request randomized with proxy.
    - Measure latency, output quality against ground truth.
 3. Assemble eval result and prepare Nostr event:
    - Use new random ephemeral Nostr key per eval.

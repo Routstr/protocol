@@ -1,4 +1,4 @@
-# RIP-04: Smart Clients & Token Management
+# RIP-05: Smart Clients & Token Management
 
 Defines client-side behavior for automated token cycling, proxy/Tor usage, and provider optimization.
 

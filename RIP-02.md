@@ -1,4 +1,4 @@
-# RIP-01: Node Listing
+# RIP-02: Node Listing
 
 Nodes announce their presence and capabilities via a Nostr event for client discovery.
 
