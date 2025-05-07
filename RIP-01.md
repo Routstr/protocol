@@ -1,25 +1,52 @@
 # RIP-01: OpenAI-API Proxy with Cashu Payments
 
+[x] - Implement HTTP proxy interface for OpenAI-compatible API requests
+
+- [x] Integrate per-request micropayment handling via Cashu tokens
+- [x] Support endpoints:
+  - [x] POST /v1/{path:path} (proxy to upstream AI service)
+  - [x] GET /v1/wallet (get Cashu token balance and API key)
+  - [x] POST /v1/wallet/topup (top up wallet with Cashu token)
+  - [x] POST /v1/wallet/refund (refund remaining balance as Cashu token)
+- [x] Authorization via Bearer API key or Cashu token
+- [x] API key and Cashu token validation and redemption
+- [x] Token-based pricing for chat/completions with MODEL_BASED_PRICING
+- [x] SSE and JSON cost reporting in responses
+- [ ] Tor hidden service deployment support
+- [ ] Admin dashboard for monitoring and settings
+
 Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with per-request micropayment handling via Cashu tokens.
 
 ## Endpoints
 
-### POST /{path:path}
+### POST /v1/{path:path} e.g. /v1/chat/completions
 
 Forward proxied requests to the upstream AI service at `UPSTREAM_BASE_URL`.
+This is usually your llamacpp or vllm server.
+
+### GET /v1/wallet
+
+Get the balance of the Cashu token and the associated API key.
+
+### POST /v1/wallet/topup
+
+Top up the balance of that temporary wallet with another Cashu token.
+
+### POST /v1/wallet/refund
+
+Recieve the full amount of the remaining balance as a Cashu token.
 
 #### Authorization
 
 - Header: `Authorization: Bearer <api-key>` or `Bearer <cashu-token>`
 - API keys: prefixed `sk-`, validated against stored hashed keys.
-- Cashu tokens: prefixed `cashu`, redeemed via Cashu L3 mint.
+- Cashu tokens: prefixed `cashu`, redeemed via Cashu mint.
 
 #### Payment Flow
 
-1. **Validation**: Verify bearer key and ensure balance ≥ `COST_PER_REQUEST` msats.
-2. **Charge Base**: Deduct `COST_PER_REQUEST` from user balance; record request count.
-3. **Forward**: Send request upstream, applying `UPSTREAM_API_KEY` override if set.
-4. **Token-Based Pricing (Optional)**: For chat/completions when `MODEL_BASED_PRICING`=true:
+1. **Balance**: The cashu token is redeemed and the balance is credited internally (allows reuse of the same token for multiple requests).
+2. **Api-Key**: Each balance has an associated API key that allowes for top-ups.
+3. **Token based pricing**: For chat/completions when `MODEL_BASED_PRICING`=true:
    - Parse upstream `usage.prompt_tokens` and `usage.completion_tokens`.
    - Compute `input_msats` = prompt_tokens/1000 × model.prompt_price.
    - Compute `output_msats` = completion_tokens/1000 × model.completion_price.
@@ -38,8 +65,12 @@ Forward proxied requests to the upstream AI service at `UPSTREAM_BASE_URL`.
 - `502 Bad Gateway`: Upstream service unavailable.
 - `500 Internal Server Error`: Unexpected errors.
 
-## Configuration
+## Tor Routing
 
-- `COST_PER_REQUEST`: Base cost in msats (env `COST_PER_REQUEST`).
-- `MODEL_BASED_PRICING`: Enable token pricing (env `MODEL_BASED_PRICING`).
-- `COST_PER_1K_INPUT_TOKENS` & `COST_PER_1K_OUTPUT_TOKENS`: Fallback pricing if `models.json` not present.
+Every node can be deployed as a Tor hidden service.
+
+## Multi model support
+
+Each node can serve multiple models.
+These models are defined in the root `/` endpoint.
+Including node information and pricing.
