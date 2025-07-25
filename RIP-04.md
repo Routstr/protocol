@@ -1,15 +1,5 @@
 # RIP-04: Evaluations & Quality Control
 
-- [ ] Implement independent evaluation (eval) services for LLM providers
-- [ ] Scan Nostr for all advertised providers
-- [ ] Run anonymized, randomized, proxied evaluation jobs
-- [ ] Publish benchmark reports for each provider (Kind 31555)
-- [ ] Support free and paid report tiers
-- [ ] Measure and report quality, latency, and cost metrics
-- [ ] Publish standard ratings to Nostr
-- [ ] Limit eval jobs to ≤5% of overall requests
-- [ ] Make public evals modular component of the protocol
-
 Specifies how independent evaluation (eval) services scan Nostr for all advertised LLM providers, run anonymized and randomized evals, and publish benchmark reports for each provider.
 
 ## Goals
@@ -74,3 +64,17 @@ Specifies how independent evaluation (eval) services scan Nostr for all advertis
 
 - Eval services are the source of trust in the marketplace, providing objective, third-party benchmarks.
 - Each report results in a set of benchmark scores, enabling transparent provider comparison and ranking.
+
+---
+
+## TODO
+
+- [ ] Implement independent evaluation (eval) services for LLM providers
+- [ ] Scan Nostr for all advertised providers
+- [ ] Run anonymized, randomized, proxied evaluation jobs
+- [ ] Publish benchmark reports for each provider (Kind 31555)
+- [ ] Support free and paid report tiers
+- [ ] Measure and report quality, latency, and cost metrics
+- [ ] Publish standard ratings to Nostr
+- [ ] Limit eval jobs to ≤5% of overall requests
+- [ ] Make public evals modular component of the protocol

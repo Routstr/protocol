@@ -1,24 +1,3 @@
-# TODO
-
-- [ ] Develop multi-language SDKs (Python, TypeScript/JavaScript, Go, Rust, etc.)
-- [ ] Implement full-stack components: client, server, discovery, evaluation server, chat API
-- [ ] Provide unified interfaces for Cashu wallet management, API key rotation, proxy/anonymity
-- [ ] Expose high-level abstractions in SDKs (token management, API key rotation, provider selection, proxy/Tor integration, secure flows)
-- [ ] Smart clients: automated token cycling/top-up, per-request API key rotation, proxy/Tor circuit selection
-- [ ] Dynamic provider discovery and scoring (price, latency, rating, reliability)
-- [ ] Pluggable architecture for custom scoring, proxy, or wallet backends
-- [ ] Reference implementations for server, discovery, and evaluation endpoints in each language
-- [ ] Standardized APIs for provider registration, health, and metrics
-- [ ] Modular evaluation server for benchmarking and rating providers
-- [ ] Chat API reference implementations (real-time and batch)
-- [ ] Built-in proxy and Tor routing in all SDKs and clients
-- [ ] Automated rotation of API keys and tokens
-- [ ] Rate limiting and circuit rotation to prevent fingerprinting
-- [ ] Define core protocol interfaces and data models in each language
-- [ ] Maintain open-source SDKs and reference servers
-- [ ] Ensure feature parity and cross-language test suites
-- [ ] Document integration patterns and privacy best practices
-
 # RIP-05: SDKs & Smart Clients
 
 This RIP proposes a comprehensive suite of SDKs and Smart Client libraries across multiple programming languages, enabling seamless integration with the protocol and ensuring robust privacy, payment, and provider management.
@@ -77,3 +56,24 @@ This RIP proposes a comprehensive suite of SDKs and Smart Client libraries acros
 - Document integration patterns and privacy best practices.
 
 ---
+
+## TODO
+
+- [ ] Develop multi-language SDKs (Python, TypeScript/JavaScript, Go, Rust, etc.)
+- [ ] Implement full-stack components: client, server, discovery, evaluation server, chat API
+- [ ] Provide unified interfaces for Cashu wallet management, API key rotation, proxy/anonymity
+- [ ] Expose high-level abstractions in SDKs (token management, API key rotation, provider selection, proxy/Tor integration, secure flows)
+- [ ] Smart clients: automated token cycling/top-up, per-request API key rotation, proxy/Tor circuit selection
+- [ ] Dynamic provider discovery and scoring (price, latency, rating, reliability)
+- [ ] Pluggable architecture for custom scoring, proxy, or wallet backends
+- [ ] Reference implementations for server, discovery, and evaluation endpoints in each language
+- [ ] Standardized APIs for provider registration, health, and metrics
+- [ ] Modular evaluation server for benchmarking and rating providers
+- [ ] Chat API reference implementations (real-time and batch)
+- [ ] Built-in proxy and Tor routing in all SDKs and clients
+- [ ] Automated rotation of API keys and tokens
+- [ ] Rate limiting and circuit rotation to prevent fingerprinting
+- [ ] Define core protocol interfaces and data models in each language
+- [ ] Maintain open-source SDKs and reference servers
+- [ ] Ensure feature parity and cross-language test suites
+- [ ] Document integration patterns and privacy best practices
