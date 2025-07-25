@@ -1,6 +1,7 @@
-# RIP-03: Frontend Discovery
+# RIP-03: Web Dashboard
 
-This document defines a fully client-side, 100% local web or app interface for node discovery, chat, and interaction. There is no backend: all logic and data flow run in the user's browser or device. The frontend includes a chat application, discovery interface, landing page, and documentation. Authentication and filtering leverage Nostr for login and social graph-based filtering. Users can publish their own node information or interact with available nodes directly from the interface.
+This document defines a fully client-side, 100% local web or app interface for provider discovery, chat, proxy interaction and wallet management.
+There is no backend: all logic and data flow run in the user's browser or device. The frontend includes a chat application, discovery interface, landing page, and documentation. Authentication and filtering leverage Nostr for login and social graph-based filtering. Users can publish their own node information or interact with available nodes directly from the interface.
 
 ## Features
 
@@ -10,8 +11,10 @@ This document defines a fully client-side, 100% local web or app interface for n
   - Discovery interface
   - Landing page
   - Documentation
+  - NIP-60 Wallet
+  - Auth Key management
 - Nostr-based login and filtering (social graph proximity)
-- List active nodes from Nostr Kind 40500.
+- List active nodes from Nostr Kind 38421.
 - Filter by:
   - Supported model(s)
   - Region
@@ -43,3 +46,11 @@ This document defines a fully client-side, 100% local web or app interface for n
 
 - Query performance: ≤200 ms for 1 k nodes.
 - Real-time updates: UI refresh on new events.
+
+---
+
+## TODO
+
+[ ] - unify chat, docs, api key management and landingpage
+[ ] - build marketplace interface
+[ ] - everything running local, no cloud function
