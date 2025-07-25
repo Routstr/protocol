@@ -1,20 +1,5 @@
 # RIP-01: OpenAI-API Proxy with Cashu Payments
 
-[x] - Implement HTTP proxy interface for OpenAI-compatible API requests
-
-- [x] Integrate per-request micropayment handling via Cashu tokens
-- [x] Support endpoints:
-  - [x] POST /v1/{path:path} (proxy to upstream AI service)
-  - [x] GET /v1/wallet (get Cashu token balance and API key)
-  - [x] POST /v1/wallet/topup (top up wallet with Cashu token)
-  - [x] POST /v1/wallet/refund (refund remaining balance as Cashu token)
-- [x] Authorization via Bearer API key or Cashu token
-- [x] API key and Cashu token validation and redemption
-- [x] Token-based pricing for chat/completions with MODEL_BASED_PRICING
-- [x] SSE and JSON cost reporting in responses
-- [ ] Tor hidden service deployment support
-- [ ] Admin dashboard for monitoring and settings
-
 Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with per-request micropayment handling via Cashu tokens.
 
 ## Endpoints
@@ -24,9 +9,9 @@ Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with
 Forward proxied requests to the upstream AI service at `UPSTREAM_BASE_URL`.
 This is usually your llamacpp or vllm server.
 
-### GET /v1/wallet
+### GET /v1/wallet/info
 
-Get the balance of the Cashu token and the associated API key.
+Get the balance of the Cashu token and the associated auth key.
 
 ### POST /v1/wallet/topup
 
@@ -74,3 +59,37 @@ Every node can be deployed as a Tor hidden service.
 Each node can serve multiple models.
 These models are defined in the root `/` endpoint.
 Including node information and pricing.
+
+## Upstream API
+
+The upstream API is defined in the `UPSTREAM_BASE_URL` environment variable which is authenticated using the `UPSTREAM_API_KEY` environment variable.
+
+Optional the proxy can attach multiple upstream APIs and route using a algorithm to other proxy providers that list their node on nostr.
+
+## X-Cashu Header
+
+Every proxy supports X-Cashu headers as payment protocol. Instead of authenticating using the Bearer API Key header a valid cashu token can be send in the 'X-Cashu: cashuBxxxxx' Header which is then claimed, and a refund is send in the same X-Cashu Header inside the response with the change balance.
+
+---
+
+## TODO
+
+- [x] HTTP proxy interface for OpenAI-compatible API requests
+- [x] Integrate per-request micropayment handling via Cashu tokens
+- [x] Endpoints:
+  - [x] POST /v1/{path:path} (proxy to upstream AI service)
+  - [x] GET /v1/wallet/info (get Cashu token balance and API key)
+  - [x] POST /v1/wallet/topup (top up wallet with Cashu token)
+  - [x] POST /v1/wallet/refund (refund remaining balance as Cashu token)
+  - [x] GET /v1/models (full details of all supported models + sats pricing)
+- [x] Authorization via Bearer API key or Cashu token
+- [x] API key and Cashu token validation and redemption
+- [x] Token-based pricing for chat/completions with MODEL_BASED_PRICING
+- [x] SSE and JSON cost reporting in responses
+- [x] Tor hidden service deployment support
+- [x] Admin dashboard for monitoring and settings
+- [ ] Routing to multiple upstream providers
+- [ ] Optional usage tracking for prepaid balances if requested by user
+- [ ] Routing to upstream routstr network based on marketplace algorithm
+- [ ] automatic setup of public upstream model providers like openai, anthropic, ...
+- [ ] publish nostr listing kind 38421 on startup
