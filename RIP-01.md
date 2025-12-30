@@ -9,87 +9,93 @@ Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with
 Forward proxied requests to the upstream AI service at `UPSTREAM_BASE_URL`.
 This is usually your llamacpp or vllm server.
 
-### GET /v1/wallet/info
+### GET /v1/info
+
+Get the node information including name, description, version, npub, mints, and connection URLs (HTTP/Onion).
+
+### GET /v1/models
+
+Get the list of supported models with their pricing information (both in USD and Sats).
+
+### GET /v1/balance/create
+
+Create a new balance (API key) from a Cashu token.
+
+- **Params**: `initial_balance_token` (Cashu token to redeem)
+- **Returns**: `{"api_key": "sk-...", "balance": 1000}`
+
+### GET /v1/balance/info
 
 Get the balance of the Cashu token and the associated auth key.
 
-### POST /v1/wallet/topup
+- **Headers**: `Authorization: Bearer <api-key>`
+
+### POST /v1/balance/topup
 
 Top up the balance of that temporary wallet with another Cashu token.
 
-### POST /v1/wallet/refund
+- **Headers**: `Authorization: Bearer <api-key>`
+- **Body**: `{"cashu_token": "cashuA..."}`
 
-Recieve the full amount of the remaining balance as a Cashu token.
+### POST /v1/balance/refund
+
+Recieve the full amount of the remaining balance as a Cashu token or to a Lightning Address.
+
+- **Headers**: `Authorization: Bearer <api-key>`
+- **Returns**: `{"token": "cashuA..."}` or `{"recipient": "user@domain.com"}`
 
 #### Authorization
 
-- Header: `Authorization: Bearer <api-key>` or `Bearer <cashu-token>`
-- API keys: prefixed `sk-`, validated against stored hashed keys.
-- Cashu tokens: prefixed `cashu`, redeemed via Cashu mint.
+- Header: `Authorization: Bearer <cashu-token or api-key (sk-...)>`
+- API keys: prefixed `sk-...`, validated against stored hashed keys.
+- Cashu tokens: prefixed `cashuB...`, redeemed via Cashu mint. If a new token is presented, a new account is created.
 
 #### Payment Flow
 
 1. **Balance**: The cashu token is redeemed and the balance is credited internally (allows reuse of the same token for multiple requests).
-2. **Api-Key**: Each balance has an associated API key that allowes for top-ups.
-3. **Token based pricing**: For chat/completions when `MODEL_BASED_PRICING`=true:
+2. **Api-Key**: Each balance has an associated API key (`sk-...`) that allows for management and top-ups.
+3. **Token based pricing**: For chat/completions:
+   - Calculate `max_cost` based on model context length or `max_tokens`.
+   - Reserve `max_cost` from balance.
+   - Forward request to upstream.
    - Parse upstream `usage.prompt_tokens` and `usage.completion_tokens`.
-   - Compute `input_msats` = prompt_tokens/1000 × model.prompt_price.
-   - Compute `output_msats` = completion_tokens/1000 × model.completion_price.
-   - Charge or refund the difference via balance adjustment.
-   - Emit SSE event `data: {"cost": {...}}` appended to stream.
+   - Compute actual cost.
+   - Finalize charge (credit back difference from reserved amount) or refund excess.
 
 #### Responses
 
-- **Streaming** (`text/event-stream`): Proxy SSE chunks and inject a final cost event.
-- **Non-Streaming** (`application/json`): Embed a top-level `"cost": {...}` field in JSON.
+- **Streaming** (`text/event-stream`): Proxy SSE chunks.
+- **Non-Streaming** (`application/json`): Standard JSON response.
 
 #### Error Codes
 
 - `401 Unauthorized`: Missing or invalid API key/Cashu token.
 - `402 Payment Required`: Insufficient balance.
-- `502 Bad Gateway`: Upstream service unavailable.
+- `403 Forbidden`: Invalid API key/Cashu token.
 - `500 Internal Server Error`: Unexpected errors.
 
 ## Tor Routing
 
-Every node can be deployed as a Tor hidden service.
+Every node can be deployed as a Tor hidden service. The `onion_url` is returned in `/v1/info`.
 
 ## Multi model support
 
 Each node can serve multiple models.
-These models are defined in the root `/` endpoint.
-Including node information and pricing.
+These models are defined in `/v1/models` including node information and pricing.
 
 ## Upstream API
 
-The upstream API is defined in the `UPSTREAM_BASE_URL` environment variable which is authenticated using the `UPSTREAM_API_KEY` environment variable.
-
-Optional the proxy can attach multiple upstream APIs and route using a algorithm to other proxy providers that list their node on nostr.
+The upstream API is defined via `UPSTREAM_BASE_URL` or configured via the database (supporting multiple upstream providers like OpenRouter, local vLLM, etc.).
 
 ## X-Cashu Header
 
-Every proxy supports X-Cashu headers as payment protocol. Instead of authenticating using the Bearer API Key header a valid cashu token can be send in the 'X-Cashu: cashuBxxxxx' Header which is then claimed, and a refund is send in the same X-Cashu Header inside the response with the change balance.
+Every proxy supports `X-Cashu` headers as a direct payment protocol (without creating a persistent account).
 
----
-
-## TODO
-
-- [x] HTTP proxy interface for OpenAI-compatible API requests
-- [x] Integrate per-request micropayment handling via Cashu tokens
-- [x] Endpoints:
-  - [x] POST /v1/{path:path} (proxy to upstream AI service)
-  - [x] GET /v1/wallet/info (get Cashu token balance and API key)
-  - [x] POST /v1/wallet/topup (top up wallet with Cashu token)
-  - [x] POST /v1/wallet/refund (refund remaining balance as Cashu token)
-  - [x] GET /v1/models (full details of all supported models + sats pricing)
-- [x] Authorization via Bearer API key or Cashu token
-- [x] API key and Cashu token validation and redemption
-- [x] Token-based pricing for chat/completions with MODEL_BASED_PRICING
-- [x] SSE and JSON cost reporting in responses
-- [x] Tor hidden service deployment support
-- [x] Admin dashboard for monitoring and settings
-- [ ] Routing to multiple upstream providers
-- [ ] Optional usage tracking for prepaid balances if requested by user
-- [ ] Routing to upstream routstr network based on marketplace algorithm
-- [ ] automatic setup of public upstream model providers like openai, anthropic, ...
-- [ ] publish nostr listing kind 38421 on startup
+1. Client sends request with `X-Cashu: <cashu-token>` header.
+2. Proxy redeems the token.
+3. Proxy calculates `max_cost` and verifies the token amount covers it.
+4. Proxy forwards request to upstream (buffering the response).
+5. Proxy calculates actual cost from usage.
+6. Proxy calculates `refund_amount = original_amount - actual_cost`.
+7. If `refund_amount > 0`, Proxy mints a new token.
+8. Proxy sends response with `X-Cashu: <refund-token>` header containing the change.
