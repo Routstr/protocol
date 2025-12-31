@@ -16,22 +16,8 @@ Nodes announce their presence and capabilities via Nostr events for client disco
     ["d", "<unique-provider-identifier>"],
     ["u", "https://..."],      // HTTP endpoint
     ["u", "<tor-onion-address>"],  // Tor hidden service endpoint
-    ["models", "gpt-4o-mini", "gpt-4o", "claude-3-5-sonnet", "..."],
     ["mint", "https://mint.example.com"],
     ["version", "0.0.1"]
-  ]
-}
-```
-
-### Model Capabilities (Optional)
-
-Providers MAY include additional tags to describe model-specific capabilities:
-
-```json
-{
-  "tags": [
-    ["model-cap", "gpt-4o", "max_tokens:128000,vision:true,tools:true"],
-    ["model-cap", "claude-3-5-sonnet", "max_tokens:200000,vision:true,tools:true"]
   ]
 }
 ```
