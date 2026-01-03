@@ -37,3 +37,7 @@ Audit results are published to the Nostr network to inform clients and other net
   - `status`: `pass`, `fail`, `warning`.
   - `details`: Specifics of failures (e.g., "Model 'gpt-4' not found", "High latency > 2s").
 - **Client Usage**: Clients ingest these audit events to filter out unreliable or dishonest providers from their local registry.
+
+## 5. Advanced Evaluations
+
+For comprehensive quality benchmarks, fraud detection (e.g., model substitution), and performance metrics (TPS/TTFT), refer to **[RIP-09: Evaluations](RIP-09.md)**. RIP-04 focuses on lightweight, continuous health checks, while RIP-09 defines the protocol for periodic, deep-dive "mystery shopper" investigations.
