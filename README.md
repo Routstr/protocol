@@ -10,10 +10,10 @@ Routstr Improvement Protocols (RIPs) are modular specification documents definin
 |---|---|---|
 | RIP-01 | [Proxy / Payments](RIP-01.md) | Standard for OpenAI-compatible API Proxy with integrated Cashu micropayments. |
 | RIP-02 | [Discovery](RIP-02.md) | Nostr event specifications for Provider Announcements (Kind 38421) and Recommendations (Kind 38000). |
-| RIP-03 | [Client Specification](RIP-03.md) | Standards for client behavior, including ephemeral auth, wallet management, and auto-topup. |
+| RIP-03 | [Clients](RIP-03.md) | Standards for client behavior, including ephemeral auth, wallet management, and auto-topup. |
 | RIP-04 | [Auditing](RIP-04.md) | Protocols for basic Uptime, Reliability, and Feature Verification checks. |
-| RIP-05 | [Pricing Algorithm](RIP-05.md) | Standardized unit of account (Millisats), cost calculation logic, and client-side verification. |
-| RIP-06 | [Routing Algorithms](RIP-06.md) | Algorithms for provider selection, scoring (Price/Trust/Perf), and failover hierarchies. |
+| RIP-05 | [Pricing](RIP-05.md) | Standardized unit of account (Millisats), cost calculation logic, and client-side verification. |
+| RIP-06 | [Routing](RIP-06.md) | Algorithms for provider selection, scoring (Price/Trust/Perf), and failover hierarchies. |
 | RIP-07 | [Admin API](RIP-07.md) | Internal API specification for node management (Settings, Upstreams, Models, Wallet). |
 | RIP-08 | [Payment Methods](RIP-08.md) | Gateways for funding sessions via Lightning (Bolt11), NWC, Bolt12, and On-Chain Bitcoin. |
 | RIP-09 | [Evaluations](RIP-09.md) | Advanced "Mystery Shopping" benchmarks for Model Authenticity, Performance, and Safety. |

@@ -67,7 +67,7 @@ To prevent "hidden fees" or overcharging, clients should verify the cost charged
 2. **Track Usage**: The client records the `usage` (prompt_tokens, completion_tokens) returned in the API response.
 3. **Calculate Expected Cost**:
 
-    ```python
+    ```
     Expected_Cost = (usage.prompt_tokens * cached_rates.prompt) +
                     (usage.completion_tokens * cached_rates.completion) +
                     ...
@@ -75,7 +75,7 @@ To prevent "hidden fees" or overcharging, clients should verify the cost charged
 
 4. **Calculate Actual Cost**:
 
-    ```python
+    ```
     Actual_Cost = Original_Token_Value - Refunded_Token_Value
     ```
 

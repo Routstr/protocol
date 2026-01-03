@@ -1,4 +1,4 @@
-# RIP-03: Client Specification
+# RIP-03: Clients
 
 This document defines the standard behavior and architectural requirements for a Routstr client. A Routstr client acts as the bridge between user applications (agents, IDEs, scripts) and the distributed network of AI service providers.
 

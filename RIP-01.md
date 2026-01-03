@@ -1,4 +1,4 @@
-# RIP-01: OpenAI-API Proxy with Cashu Payments
+# RIP-01: Proxy / Payments
 
 Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with per-request micropayment handling via Cashu tokens.
 

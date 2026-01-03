@@ -1,4 +1,4 @@
-# RIP-06: Routing Algorithms
+# RIP-06: Routing
 
 This document defines standard algorithms for provider selection, scoring, and failover. These algorithms are shared across the ecosystem—used by smart clients for local selection and by routing nodes (aggregators) for recursive request handling.
 
