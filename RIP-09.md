@@ -9,12 +9,12 @@ To establish a "Web of Trust" where independent evaluators verify that providers
 - **Fraud Detection**: Detecting if a provider advertises `gpt-4` (expensive) but routes to `gpt-3.5-turbo` or `llama-3-70b` (cheaper) to pocket the difference.
 - **Performance Benchmarking**: Measuring real-world tokens-per-second (TPS) and time-to-first-token (TTFT).
 
-## 2. Methodology: Anonymized "Mystery Shopping"
+## 2. Anonymized Benchmarking
 
 To prevent providers from gaming the metrics (e.g., prioritizing traffic from known audit bots), evaluations MUST be indistinguishable from normal user traffic.
 
-1. **Ephemeral Identity**: The evaluator creates a fresh, one-time-use wallet and keypair for each benchmark run.
-2. **Paid Traffic**: The evaluator pays full market price for the request.
+1. **Ephemeral Identity**: The evaluator uses cashu, ip proxys, tor, etc. to remain anonymous.
+2. **Paid Traffic**: The evaluator pays normal market price for the request.
 3. **Real-World Prompts**: The benchmark uses diverse, realistic prompt sets (e.g., coding problems, reasoning tasks) rather than static "ping" strings that are easily fingerprinted.
 
 ## 3. Metrics
@@ -47,9 +47,9 @@ Evaluators probe for vulnerabilities that could expose downstream users or agent
 - **Tool Sandbox Escape**: Attempting to manipulate tool arguments to access unauthorized resources.
 - **Data Leakage**: Checking if the model reveals sensitive training data or system prompts from other users in the same context (for cached contexts).
 
-## 4. Reporting
+## 4. Reporting (NotImplementedYet)
 
-Evaluators publish their findings as **Kind 31555 (Evaluation Report)** events on Nostr.
+Evaluators publish their findings as **Kind xxxxxxx (Evaluation Report)** events on Nostr.
 
 - **Content**:
   - `provider_pubkey`: The audited provider.
