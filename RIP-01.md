@@ -2,12 +2,20 @@
 
 Defines the HTTP proxy interface forwarding OpenAI-compatible API requests, with per-request micropayment handling via Cashu tokens.
 
+## Basic Usage
+
+Routstr provides an OpenAI-compatible API interface. Basic LLM requests are made using standard `POST` requests to `/v1/chat/completions` (or other supported endpoints) with a JSON body containing the model parameters.
+
+Authentication and payment are handled via the `Authorization` header. The "api-key" provided in the header can be one of two things:
+
+1. **A Temporary Balance Key (`sk-...`)**: A standard API key linked to a pre-funded temporary wallet/balance on the server.
+2. **A Cashu Token (`cashuA...`)**: A raw Cashu eCash token. The server will redeem this token to create an ephemeral session or account.
+
 ## Endpoints
 
 ### POST /v1/{path:path} e.g. /v1/chat/completions
 
-Forward proxied requests to the upstream AI service at `UPSTREAM_BASE_URL`.
-This is usually your llamacpp or vllm server.
+Forward proxied requests to the upstream service like local vLLM, OpenAI, Anthropic, etc.
 
 ### GET /v1/info
 

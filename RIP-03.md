@@ -14,9 +14,10 @@ Routstr clients MUST maintain high fidelity with the OpenAI API specification to
 
 ## 2. Ephemeral Authentication (Cashu-as-Key)
 
-Authentication and funding are unified into a single bearer-asset mechanism, preserving complete privacy through a "Rolling Identity" model.
+Authentication and funding are unified into a single mechanism. The client passes either a temporary balance key (`sk-...`) or a Cashu token (`cashuA...`) in the `Authorization` header.
 
-- **Cashu Token as API Key**: The client passes a valid Cashu token (containing monetary value) in the standard API key field (e.g., `Authorization: Bearer <cashu_token>`).
+For the full specification of authentication methods and token types, refer to **[RIP-01: Authorization](RIP-01.md#authorization)**.
+
 - **Implicit Session**: The provider accepts this token as both payment and a temporary identity. The token's secret effectively acts as the account identifier for the duration of the operation.
 - **Privacy by Default**:
   - Upon request completion, the provider deducts the cost.
