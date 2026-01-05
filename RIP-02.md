@@ -1,6 +1,6 @@
 # RIP-02: Discovery
 
-Nodes announce their presence and capabilities via Nostr events for client discovery, following NIP-91.
+Nodes announce their presence and capabilities via Nostr events for client discovery.
 
 ## Provider Information Event
 
