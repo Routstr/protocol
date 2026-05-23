@@ -47,7 +47,7 @@ Top up the balance of that temporary wallet with another Cashu token.
 
 ### POST /v1/balance/refund
 
-Recieve the full amount of the remaining balance as a Cashu token or to a Lightning Address.
+Receive the full amount of the remaining balance as a Cashu token or to a Lightning Address.
 
 - **Headers**: `Authorization: Bearer <api-key>`
 - **Returns**: `{"token": "cashuA..."}` or `{"recipient": "user@domain.com"}`
